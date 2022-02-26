@@ -36,3 +36,8 @@ modeling:
     max_features: 0.5
     # DO not change the following
     oob_score: true
+  xgboost_regressor:
+    n_estimators: 1000
+    learning_rate: 0.05
+    n_jobs: -1
+    max_depth: 10

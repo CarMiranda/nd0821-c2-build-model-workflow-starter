@@ -11,7 +11,8 @@ _steps = [
     "basic_cleaning",
     "data_check",
     "data_split",
-    "train_random_forest",
+    # "train_random_forest",
+    "train_xgboost_regressor",
     # NOTE: We do not include this in the steps so it is not run by mistake.
     # You first need to promote a model export to "prod" before you can run this,
     # then you need to run this step explicitly
@@ -87,6 +88,27 @@ def go(config: DictConfig):
                     "test_size": config["modeling"]["test_size"],
                     "random_seed": config["modeling"]["random_seed"],
                     "stratify_by": config["modeling"]["stratify_by"],
+                },
+            )
+
+        if "train_xgboost_regressor" in active_steps:
+            bst_config = os.path.abspath("bst_config.json")
+            with open(bst_config, "w+") as fp:
+                json.dump(dict(config["modeling"]["xgboost_regressor"].items()), fp)
+
+            _ = mlflow.run(
+                os.path.join(
+                    hydra.utils.get_original_cwd(), "src", "train_xgboost_regressor"
+                ),
+                "main",
+                parameters={
+                    "trainval_artifact": "trainval_data.csv:latest",
+                    "val_size": config["modeling"]["val_size"],
+                    "random_seed": config["modeling"]["random_seed"],
+                    "stratify_by": config["modeling"]["stratify_by"],
+                    "bst_config": bst_config,
+                    "max_tfidf_features": config["modeling"]["max_tfidf_features"],
+                    "output_artifact": "xgboost_regressor_export",
                 },
             )
 
